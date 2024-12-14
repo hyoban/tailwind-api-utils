@@ -1,6 +1,6 @@
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { TailwindUtils } from '../src/index'
+import { TailwindUtils } from '../../src/index'
 
 describe('should', () => {
   it('works', async () => {

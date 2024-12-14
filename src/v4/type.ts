@@ -3,10 +3,10 @@ export interface DesignSystem {
   //   utilities: Utilities
   //   variants: Variants
 
-  invalidCandidates: Set<string>
+  // invalidCandidates: Set<string>
 
   // Whether to mark utility declarations as !important
-  important: boolean
+  // important: boolean
 
   getClassOrder: (classes: string[]) => [string, bigint | null][]
   //   getClassList: () => ClassEntry[]
@@ -17,7 +17,7 @@ export interface DesignSystem {
   //   compileAstNodes: (candidate: Candidate) => ReturnType<typeof compileAstNodes>
 
   // getVariantOrder: () => Map<Variant, number>
-  resolveThemeValue: (path: string) => string | undefined
+  // resolveThemeValue: (path: string) => string | undefined
 
   // Used by IntelliSense
   candidatesToCss: (classes: string[]) => (string | null)[]
