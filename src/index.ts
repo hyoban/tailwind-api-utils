@@ -2,6 +2,7 @@ import type { DesignSystem } from './type'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import { getPackageInfoSync, resolveModule } from 'local-pkg'
+import { defaultExtractor } from './extractor/defaultExtractor'
 import { importModule } from './utils'
 import { loadModule, loadStylesheet } from './v4/load'
 
@@ -75,5 +76,10 @@ export class TailwindUtils {
     return Array.isArray(className)
       ? res.map(r => r[1] !== null)
       : res[0][1] !== null
+  }
+
+  extract(content: string, options?: { separator?: string, prefix?: string }): string[] {
+    const _extract = defaultExtractor(options?.separator, options?.prefix)
+    return _extract(content)
   }
 }
