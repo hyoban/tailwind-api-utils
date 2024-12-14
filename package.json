@@ -47,6 +47,11 @@
     "typecheck": "tsc --noEmit",
     "prepare": "simple-git-hooks"
   },
+  "dependencies": {
+    "enhanced-resolve": "^5.17.1",
+    "jiti": "^2.4.1",
+    "local-pkg": "^0.5.1"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "^3.12.0",
     "@antfu/ni": "^0.23.1",
@@ -58,6 +63,7 @@
     "lint-staged": "^15.2.11",
     "pnpm": "^9.15.0",
     "simple-git-hooks": "^2.11.1",
+    "tailwindcss": "4.0.0-beta.7",
     "typescript": "^5.7.2",
     "unbuild": "^3.0.1",
     "vite": "^6.0.3",
