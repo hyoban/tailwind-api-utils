@@ -1,4 +1,9 @@
 {
+  "name": "test-v4",
+  "private": true,
+  "scripts": {
+    "test": "vitest"
+  },
   "dependencies": {
     "tailwindcss": "4.0.0-beta.7"
   }

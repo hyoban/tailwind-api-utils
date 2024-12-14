@@ -43,7 +43,7 @@
     "prepublishOnly": "nr build",
     "release": "bumpp && pnpm publish",
     "start": "esno src/index.ts",
-    "test": "vitest",
+    "test": "CI=1 pnpm --recursive run test",
     "typecheck": "tsc --noEmit",
     "prepare": "simple-git-hooks"
   },
