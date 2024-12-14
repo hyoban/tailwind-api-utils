@@ -1,4 +1,4 @@
-import type { DesignSystem } from './v4/type'
+import type { DesignSystem } from './type'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import { getPackageInfoSync, resolveModule } from 'local-pkg'
