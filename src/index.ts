@@ -62,6 +62,8 @@ export class TailwindUtils {
     }
   }
 
+  isValidClassName(className: string): boolean
+  isValidClassName(className: string[]): boolean[]
   isValidClassName(className: string | string[]): boolean | boolean[] {
     const input = Array.isArray(className) ? className : [className]
 
