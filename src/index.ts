@@ -13,15 +13,17 @@ export class TailwindUtils {
   private isV4 = false
   private extractor: ((content: string) => string[]) | null = null
 
-  async loadConfig(configPath: string, options?: PackageResolvingOptions): Promise<void> {
-    const res = getPackageInfoSync('tailwindcss', options)
+  async loadConfig(configPath: string, options?: { pwd?: string }): Promise<void> {
+    const { pwd } = options || {}
+    const packageResolvingOptions: PackageResolvingOptions = { paths: pwd ? [pwd] : [] }
+    const res = getPackageInfoSync('tailwindcss', packageResolvingOptions)
     if (!res) {
       throw new Error('Could not find tailwindcss')
     }
     this.packageInfo = res
     this.isV4 = !!this.packageInfo.version?.startsWith('4')
 
-    const tailwindLibPath = resolveModule('tailwindcss', options)
+    const tailwindLibPath = resolveModule('tailwindcss', packageResolvingOptions)
     if (!tailwindLibPath)
       throw new Error('Could not resolve tailwindcss')
 
@@ -29,7 +31,7 @@ export class TailwindUtils {
       const tailwindMod = await importModule(tailwindLibPath)
       const { __unstable__loadDesignSystem } = tailwindMod
 
-      const defaultCSSThemePath = resolveModule('tailwindcss/theme.css', options)
+      const defaultCSSThemePath = resolveModule('tailwindcss/theme.css', packageResolvingOptions)
       if (!defaultCSSThemePath)
         throw new Error('Could not resolve tailwindcss theme')
       const defaultCSSTheme = await fsp.readFile(defaultCSSThemePath, 'utf-8')
