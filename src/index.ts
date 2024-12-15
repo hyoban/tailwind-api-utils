@@ -1,3 +1,4 @@
+import type { PackageResolvingOptions } from 'local-pkg'
 import type { DesignSystem } from './type'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
@@ -21,8 +22,8 @@ export class TailwindUtils {
     this.isV4 = !!this.packageInfo.version?.startsWith('4')
   }
 
-  async loadConfig(configPath: string): Promise<void> {
-    const tailwindLibPath = resolveModule('tailwindcss')
+  async loadConfig(configPath: string, options?: PackageResolvingOptions): Promise<void> {
+    const tailwindLibPath = resolveModule('tailwindcss', options)
     if (!tailwindLibPath)
       throw new Error('Could not resolve tailwindcss')
 
@@ -30,7 +31,7 @@ export class TailwindUtils {
       const tailwindMod = await importModule(tailwindLibPath)
       const { __unstable__loadDesignSystem } = tailwindMod
 
-      const defaultCSSThemePath = resolveModule('tailwindcss/theme.css')
+      const defaultCSSThemePath = resolveModule('tailwindcss/theme.css', options)
       if (!defaultCSSThemePath)
         throw new Error('Could not resolve tailwindcss theme')
       const defaultCSSTheme = await fsp.readFile(defaultCSSThemePath, 'utf-8')
