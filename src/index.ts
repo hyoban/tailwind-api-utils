@@ -75,8 +75,7 @@ export class TailwindUtils {
         path.resolve(tailwindLibPath, '../../loadConfig.js'),
       )
 
-      const config = resolveConfig(loadConfig(configPath))
-      this.context = createContext(config)
+      this.context = createContext(resolveConfig(loadConfig(configPath)))
 
       const extractorContext = {
         tailwindConfig: {

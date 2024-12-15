@@ -19,4 +19,14 @@ describe('should', () => {
     expect(extractions).toContain('px-4')
     expect(extractions).toContain('pointer-events-none')
   })
+
+  it('load config properly', async () => {
+    const utils = new TailwindUtils()
+    await utils.loadConfig(path.resolve(import.meta.dirname, 'tailwind.config.cjs'))
+    expect(utils.context?.tailwindConfig?.content?.files).toMatchInlineSnapshot(`
+      [
+        "./src/**/*.{html,js}",
+      ]
+    `)
+  })
 })
