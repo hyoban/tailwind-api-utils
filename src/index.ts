@@ -9,20 +9,18 @@ import { loadModule, loadStylesheet } from './v4/load'
 
 export class TailwindUtils {
   public context: DesignSystem | null = null
-  private packageInfo: Exclude<ReturnType<typeof getPackageInfoSync>, undefined>
+  private packageInfo: ReturnType<typeof getPackageInfoSync>
   private isV4 = false
   private extractor: ((content: string) => string[]) | null = null
 
-  constructor() {
-    const res = getPackageInfoSync('tailwindcss')
+  async loadConfig(configPath: string, options?: PackageResolvingOptions): Promise<void> {
+    const res = getPackageInfoSync('tailwindcss', options)
     if (!res) {
       throw new Error('Could not find tailwindcss')
     }
     this.packageInfo = res
     this.isV4 = !!this.packageInfo.version?.startsWith('4')
-  }
 
-  async loadConfig(configPath: string, options?: PackageResolvingOptions): Promise<void> {
     const tailwindLibPath = resolveModule('tailwindcss', options)
     if (!tailwindLibPath)
       throw new Error('Could not resolve tailwindcss')
