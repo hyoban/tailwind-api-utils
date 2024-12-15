@@ -71,8 +71,11 @@ export class TailwindUtils {
       const { defaultExtractor } = require(
         path.resolve(tailwindLibPath, '../lib/defaultExtractor.js'),
       )
+      const loadConfig = require(
+        path.resolve(tailwindLibPath, '../../loadConfig.js'),
+      )
 
-      const config = resolveConfig(await importModule(configPath, pwd))
+      const config = resolveConfig(loadConfig(configPath))
       this.context = createContext(config)
 
       const extractorContext = {
