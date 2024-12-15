@@ -47,6 +47,9 @@
     "typecheck": "tsc --noEmit",
     "prepare": "simple-git-hooks"
   },
+  "peerDependencies": {
+    "tailwindcss": "^3.0.0 || ^4.0.0 || ^4.0.0-beta"
+  },
   "dependencies": {
     "enhanced-resolve": "^5.17.1",
     "jiti": "^2.4.1",
