@@ -1,1 +1,1 @@
-export function defaultExtractor(separator = ':', prefix = ''): (content: string) => string[]
+export function defaultExtractor(context: any): (content: string) => string[]

@@ -10,5 +10,13 @@ describe('should', () => {
     expect(utils.isValidClassName('bg-red-500')).toBe(true)
     expect(utils.isValidClassName('bg-red-10000')).toBe(false)
     expect(utils.isValidClassName('group')).toBe(false)
+
+    const extractions = utils.extract(`
+      <div class="text-center font-bold px-4 pointer-events-none"></div>
+    `)
+    expect(extractions).toContain('text-center')
+    expect(extractions).toContain('font-bold')
+    expect(extractions).toContain('px-4')
+    expect(extractions).toContain('pointer-events-none')
   })
 })

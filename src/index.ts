@@ -2,7 +2,7 @@ import type { DesignSystem } from './type'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import { getPackageInfoSync, resolveModule } from 'local-pkg'
-import { defaultExtractor } from './extractor/defaultExtractor'
+import { defaultExtractor as defaultExtractorLocal } from './extractor/defaultExtractor'
 import { importModule } from './utils'
 import { loadModule, loadStylesheet } from './v4/load'
 
@@ -10,6 +10,7 @@ export class TailwindUtils {
   private designSystem: DesignSystem | null = null
   private packageInfo: Exclude<ReturnType<typeof getPackageInfoSync>, undefined>
   private isV4 = false
+  private extractor: ((content: string) => string[]) | null = null
 
   constructor() {
     const res = getPackageInfoSync('tailwindcss')
@@ -49,6 +50,14 @@ export class TailwindUtils {
           },
         },
       )
+
+      const extractorContext = {
+        tailwindConfig: {
+          separator: '-',
+          prefix: '',
+        },
+      }
+      this.extractor = defaultExtractorLocal(extractorContext)
     }
     else {
       const { createContext } = await importModule(
@@ -57,9 +66,27 @@ export class TailwindUtils {
       const { default: resolveConfig } = await importModule(
         path.resolve(tailwindLibPath, '../../resolveConfig.js'),
       )
-      this.designSystem = createContext(
-        resolveConfig(await importModule(configPath)),
+      const { defaultExtractor } = await importModule(
+        path.resolve(tailwindLibPath, '../lib/defaultExtractor.js'),
       )
+
+      const config = resolveConfig(await importModule(configPath))
+      this.designSystem = createContext(config)
+
+      const extractorContext = {
+        tailwindConfig: {
+          separator: '-',
+          prefix: '',
+        },
+      }
+      if (this.designSystem?.tailwindConfig?.separator) {
+        extractorContext.tailwindConfig.separator = this.designSystem.tailwindConfig.separator
+      }
+      if (this.designSystem?.tailwindConfig?.prefix) {
+        extractorContext.tailwindConfig.prefix = this.designSystem.tailwindConfig.prefix
+      }
+
+      this.extractor = defaultExtractor(extractorContext)
     }
   }
 
@@ -78,8 +105,11 @@ export class TailwindUtils {
       : res[0][1] !== null
   }
 
-  extract(content: string, options?: { separator?: string, prefix?: string }): string[] {
-    const _extract = defaultExtractor(options?.separator, options?.prefix)
-    return _extract(content)
+  extract(content: string): string[] {
+    if (!this.extractor) {
+      throw new Error('Extractor is not available')
+    }
+
+    return this.extractor(content)
   }
 }

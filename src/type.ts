@@ -21,4 +21,9 @@ export interface DesignSystem {
 
   // Used by IntelliSense
   candidatesToCss: (classes: string[]) => (string | null)[]
+
+  tailwindConfig?: {
+    separator?: string
+    prefix?: string
+  }
 }

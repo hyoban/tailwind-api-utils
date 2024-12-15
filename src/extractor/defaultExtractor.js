@@ -3,8 +3,8 @@
 import * as regex from './regex'
 import { splitAtTopLevelOnly } from './splitAtTopLevelOnly'
 
-export function defaultExtractor(configSeparator = ':', configPrefix = '') {
-  const patterns = Array.from(buildRegExps(configSeparator, configPrefix))
+export function defaultExtractor(context) {
+  const patterns = Array.from(buildRegExps(context))
 
   /**
    * @param {string} content
@@ -48,11 +48,11 @@ export function defaultExtractor(configSeparator = ':', configPrefix = '') {
   }
 }
 
-function* buildRegExps(configSeparator, configPrefix) {
-  const separator = configSeparator
+function* buildRegExps(context) {
+  const separator = context.tailwindConfig.separator
   const prefix
-    = configPrefix !== ''
-      ? regex.optional(regex.pattern([/-?/, regex.escape(configPrefix)]))
+    = context.tailwindConfig.prefix !== ''
+      ? regex.optional(regex.pattern([/-?/, regex.escape(context.tailwindConfig.prefix)]))
       : ''
 
   const utility = regex.any([
