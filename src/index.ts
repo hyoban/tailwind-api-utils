@@ -28,7 +28,7 @@ export class TailwindUtils {
       throw new Error('Could not resolve tailwindcss')
 
     if (this.isV4) {
-      const tailwindMod = await importModule(tailwindLibPath)
+      const tailwindMod = await importModule(tailwindLibPath, pwd)
       const { __unstable__loadDesignSystem } = tailwindMod
 
       const defaultCSSThemePath = resolveModule('tailwindcss/theme.css', packageResolvingOptions)
@@ -63,15 +63,18 @@ export class TailwindUtils {
     else {
       const { createContext } = await importModule(
         path.resolve(tailwindLibPath, '../lib/setupContextUtils.js'),
+        pwd,
       )
       const { default: resolveConfig } = await importModule(
         path.resolve(tailwindLibPath, '../../resolveConfig.js'),
+        pwd,
       )
       const { defaultExtractor } = await importModule(
         path.resolve(tailwindLibPath, '../lib/defaultExtractor.js'),
+        pwd,
       )
 
-      const config = resolveConfig(await importModule(configPath))
+      const config = resolveConfig(await importModule(configPath, pwd))
       this.context = createContext(config)
 
       const extractorContext = {
