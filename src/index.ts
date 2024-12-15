@@ -15,8 +15,8 @@ export class TailwindUtils {
   private extractor: ((content: string) => string[]) | null = null
 
   async loadConfig(configPath: string, options?: { pwd?: string }): Promise<void> {
-    const { pwd } = options || {}
-    const packageResolvingOptions: PackageResolvingOptions = { paths: pwd ? [pwd] : [] }
+    const pwd = options?.pwd ?? path.dirname(configPath)
+    const packageResolvingOptions: PackageResolvingOptions = { paths: [pwd] }
     const res = getPackageInfoSync('tailwindcss', packageResolvingOptions)
     if (!res) {
       throw new Error('Could not find tailwindcss')
