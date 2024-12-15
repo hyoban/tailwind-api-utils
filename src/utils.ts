@@ -12,12 +12,12 @@ const _dirname = typeof __dirname !== 'undefined'
 // fails, it sets up `jiti` and attempts to import this way so that `.ts` files
 // can be resolved properly.
 let jiti: null | Jiti = null
+let currentPath: string | null = null
 export async function importModule(path: string, pwd?: string): Promise<any> {
-  try {
-    return await import(path)
+  if (currentPath !== path) {
+    currentPath = path
+    jiti = null
   }
-  catch {
-    jiti ??= createJiti(pwd || _dirname, { moduleCache: false, fsCache: false })
-    return await jiti.import(path)
-  }
+  jiti ??= createJiti(pwd || _dirname, { moduleCache: false, fsCache: false })
+  return await jiti.import(path)
 }

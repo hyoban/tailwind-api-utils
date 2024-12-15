@@ -1,3 +1,4 @@
+/* eslint-disable ts/no-require-imports */
 import type { PackageResolvingOptions } from 'local-pkg'
 import type { DesignSystem } from './type'
 import fsp from 'node:fs/promises'
@@ -61,17 +62,14 @@ export class TailwindUtils {
       this.extractor = defaultExtractorLocal(extractorContext)
     }
     else {
-      const { createContext } = await importModule(
+      const { createContext } = require(
         path.resolve(tailwindLibPath, '../lib/setupContextUtils.js'),
-        pwd,
       )
-      const { default: resolveConfig } = await importModule(
+      const resolveConfig = require(
         path.resolve(tailwindLibPath, '../../resolveConfig.js'),
-        pwd,
       )
-      const { defaultExtractor } = await importModule(
+      const { defaultExtractor } = require(
         path.resolve(tailwindLibPath, '../lib/defaultExtractor.js'),
-        pwd,
       )
 
       const config = resolveConfig(await importModule(configPath, pwd))
