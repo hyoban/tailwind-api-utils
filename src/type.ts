@@ -25,5 +25,8 @@ export interface DesignSystem {
   tailwindConfig?: {
     separator?: string
     prefix?: string
+    content?: {
+      files?: string[]
+    }
   }
 }

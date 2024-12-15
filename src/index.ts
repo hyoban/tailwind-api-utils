@@ -8,7 +8,7 @@ import { importModule } from './utils'
 import { loadModule, loadStylesheet } from './v4/load'
 
 export class TailwindUtils {
-  private designSystem: DesignSystem | null = null
+  public context: DesignSystem | null = null
   private packageInfo: Exclude<ReturnType<typeof getPackageInfoSync>, undefined>
   private isV4 = false
   private extractor: ((content: string) => string[]) | null = null
@@ -39,7 +39,7 @@ export class TailwindUtils {
       const css = await fsp.readFile(configPath, 'utf-8')
       const base = path.dirname(configPath)
 
-      this.designSystem = await __unstable__loadDesignSystem(
+      this.context = await __unstable__loadDesignSystem(
         `${defaultCSSTheme}\n${css}`,
         {
           base,
@@ -72,7 +72,7 @@ export class TailwindUtils {
       )
 
       const config = resolveConfig(await importModule(configPath))
-      this.designSystem = createContext(config)
+      this.context = createContext(config)
 
       const extractorContext = {
         tailwindConfig: {
@@ -80,11 +80,11 @@ export class TailwindUtils {
           prefix: '',
         },
       }
-      if (this.designSystem?.tailwindConfig?.separator) {
-        extractorContext.tailwindConfig.separator = this.designSystem.tailwindConfig.separator
+      if (this.context?.tailwindConfig?.separator) {
+        extractorContext.tailwindConfig.separator = this.context.tailwindConfig.separator
       }
-      if (this.designSystem?.tailwindConfig?.prefix) {
-        extractorContext.tailwindConfig.prefix = this.designSystem.tailwindConfig.prefix
+      if (this.context?.tailwindConfig?.prefix) {
+        extractorContext.tailwindConfig.prefix = this.context.tailwindConfig.prefix
       }
 
       this.extractor = defaultExtractor(extractorContext)
@@ -96,7 +96,7 @@ export class TailwindUtils {
   isValidClassName(className: string | string[]): boolean | boolean[] {
     const input = Array.isArray(className) ? className : [className]
 
-    const res = this.designSystem?.getClassOrder(input)
+    const res = this.context?.getClassOrder(input)
     if (!res) {
       throw new Error('Failed to get class order')
     }
