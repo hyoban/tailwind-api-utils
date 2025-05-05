@@ -1,7 +1,7 @@
 {
   "name": "tailwind-api-utils",
   "type": "module",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "packageManager": "pnpm@10.10.0",
   "description": "utils using the Tailwind API",
   "author": "Stephen Zhou <hi@hyoban.cc>",
