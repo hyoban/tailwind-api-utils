@@ -113,6 +113,31 @@ export class TailwindUtils {
       : res[0][1] !== null
   }
 
+  getSortedClassNames(className: string[]): string[] {
+    const res = this.context?.getClassOrder(className)
+    if (!res) {
+      throw new Error('Failed to get class order')
+    }
+
+    return res
+      .sort(([nameA, a], [nameZ, z]) => {
+        // Move `...` to the end of the list
+        if (nameA === '...' || nameA === '…')
+          return 1
+        if (nameZ === '...' || nameZ === '…')
+          return -1
+
+        if (a === z)
+          return 0
+        if (a === null)
+          return -1
+        if (z === null)
+          return 1
+        return bigSign(a - z)
+      })
+      .map(([name]) => name)
+  }
+
   extract(content: string): string[] {
     if (!this.extractor) {
       throw new Error('Extractor is not available')
@@ -120,4 +145,8 @@ export class TailwindUtils {
 
     return this.extractor(content)
   }
+}
+
+function bigSign(bigIntValue: bigint): number {
+  return Number(bigIntValue > 0n) - Number(bigIntValue < 0n)
 }
