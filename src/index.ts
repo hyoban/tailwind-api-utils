@@ -16,7 +16,11 @@ export class TailwindUtils {
 
   async loadConfig(
     configPathOrContent: string | Record<PropertyKey, any>,
-    options?: { pwd?: string },
+    options?: {
+      pwd?: string
+      separator?: string
+      prefix?: string
+    },
   ): Promise<void> {
     const pwd = options?.pwd ?? (typeof configPathOrContent === 'string' ? path.dirname(configPathOrContent) : undefined)
     const packageResolvingOptions: PackageResolvingOptions = { paths: pwd ? [pwd] : undefined }
@@ -57,9 +61,12 @@ export class TailwindUtils {
 
       const extractorContext = {
         tailwindConfig: {
-          separator: '-',
-          prefix: '',
+          separator: options?.separator ?? '-',
+          prefix: options?.prefix ?? '',
         },
+      }
+      if (this.context) {
+        this.context.tailwindConfig = extractorContext.tailwindConfig
       }
       this.extractor = defaultExtractorLocal(extractorContext)
     }
@@ -83,8 +90,8 @@ export class TailwindUtils {
 
       const extractorContext = {
         tailwindConfig: {
-          separator: '-',
-          prefix: '',
+          separator: options?.separator ?? '-',
+          prefix: options?.prefix ?? '',
         },
       }
       if (this.context?.tailwindConfig?.separator) {
