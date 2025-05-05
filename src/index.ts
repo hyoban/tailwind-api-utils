@@ -14,9 +14,12 @@ export class TailwindUtils {
   private isV4 = false
   private extractor: ((content: string) => string[]) | null = null
 
-  async loadConfig(configPath: string, options?: { pwd?: string }): Promise<void> {
-    const pwd = options?.pwd ?? path.dirname(configPath)
-    const packageResolvingOptions: PackageResolvingOptions = { paths: [pwd] }
+  async loadConfig(
+    configPathOrContent: string | Record<PropertyKey, any>,
+    options?: { pwd?: string },
+  ): Promise<void> {
+    const pwd = options?.pwd ?? (typeof configPathOrContent === 'string' ? path.dirname(configPathOrContent) : undefined)
+    const packageResolvingOptions: PackageResolvingOptions = { paths: pwd ? [pwd] : undefined }
     const res = getPackageInfoSync('tailwindcss', packageResolvingOptions)
     if (!res) {
       throw new Error('Could not find tailwindcss')
@@ -37,13 +40,12 @@ export class TailwindUtils {
         throw new Error('Could not resolve tailwindcss theme')
       const defaultCSSTheme = await fsp.readFile(defaultCSSThemePath, 'utf-8')
 
-      const css = await fsp.readFile(configPath, 'utf-8')
-      const base = path.dirname(configPath)
+      const css = typeof configPathOrContent === 'string' ? await fsp.readFile(configPathOrContent, 'utf-8') : ''
 
       this.context = await __unstable__loadDesignSystem(
         `${defaultCSSTheme}\n${css}`,
         {
-          base,
+          base: pwd,
           async loadModule(id: any, base: any) {
             return loadModule(id, base, () => {})
           },
@@ -75,7 +77,9 @@ export class TailwindUtils {
         path.resolve(tailwindLibPath, '../../loadConfig.js'),
       )
 
-      this.context = createContext(resolveConfig(loadConfig(configPath)))
+      this.context = createContext(resolveConfig(
+        typeof configPathOrContent === 'string' ? loadConfig(configPathOrContent) : configPathOrContent,
+      ))
 
       const extractorContext = {
         tailwindConfig: {

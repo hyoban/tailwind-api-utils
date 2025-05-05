@@ -29,4 +29,20 @@ describe('should', () => {
       ]
     `)
   })
+
+  it('load config object', async () => {
+    const utils = new TailwindUtils()
+    await utils.loadConfig({
+      content: ['./src/**/*.{html,js}'],
+      theme: {
+        extend: {},
+      },
+      plugins: [],
+    })
+    expect(utils.context?.tailwindConfig?.content?.files).toMatchInlineSnapshot(`
+      [
+        "./src/**/*.{html,js}",
+      ]
+    `)
+  })
 })
