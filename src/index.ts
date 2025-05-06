@@ -1,5 +1,5 @@
 /* eslint-disable ts/no-require-imports */
-import type { PackageResolvingOptions } from 'local-pkg'
+import type { PackageInfo, PackageResolvingOptions } from 'local-pkg'
 import type { DesignSystem } from './type'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
@@ -9,10 +9,19 @@ import { importModule } from './utils'
 import { loadModule, loadStylesheet } from './v4/load'
 
 export class TailwindUtils {
+  public isV4: boolean
+  public packageInfo: PackageInfo
+
   public context: DesignSystem | null = null
-  private packageInfo: ReturnType<typeof getPackageInfoSync>
-  private isV4 = false
   private extractor: ((content: string) => string[]) | null = null
+
+  constructor(options?: PackageResolvingOptions) {
+    this.packageInfo = getPackageInfoSync('tailwindcss', options) as PackageInfo
+    if (!this.packageInfo) {
+      throw new Error('Could not find tailwindcss')
+    }
+    this.isV4 = !!this.packageInfo.version?.startsWith('4')
+  }
 
   async loadConfig(
     configPathOrContent: string | Record<PropertyKey, any>,
@@ -22,87 +31,111 @@ export class TailwindUtils {
       prefix?: string
     },
   ): Promise<void> {
+    if (this.isV4) {
+      await this.loadConfigV4(configPathOrContent, options)
+    }
+    else {
+      this.loadConfigV3(configPathOrContent, options)
+    }
+  }
+
+  async loadConfigV4(
+    configPathOrContent: string | Record<PropertyKey, any>,
+    options?: {
+      pwd?: string
+      separator?: string
+      prefix?: string
+    },
+  ): Promise<void> {
     const pwd = options?.pwd ?? (typeof configPathOrContent === 'string' ? path.dirname(configPathOrContent) : undefined)
     const packageResolvingOptions: PackageResolvingOptions = { paths: pwd ? [pwd] : undefined }
-    const res = getPackageInfoSync('tailwindcss', packageResolvingOptions)
-    if (!res) {
-      throw new Error('Could not find tailwindcss')
-    }
-    this.packageInfo = res
-    this.isV4 = !!this.packageInfo.version?.startsWith('4')
 
     const tailwindLibPath = resolveModule('tailwindcss', packageResolvingOptions)
     if (!tailwindLibPath)
       throw new Error('Could not resolve tailwindcss')
 
-    if (this.isV4) {
-      const tailwindMod = await importModule(tailwindLibPath, pwd)
-      const { __unstable__loadDesignSystem } = tailwindMod
+    const tailwindMod = await importModule(tailwindLibPath, pwd)
+    const { __unstable__loadDesignSystem } = tailwindMod
 
-      const defaultCSSThemePath = resolveModule('tailwindcss/theme.css', packageResolvingOptions)
-      if (!defaultCSSThemePath)
-        throw new Error('Could not resolve tailwindcss theme')
-      const defaultCSSTheme = await fsp.readFile(defaultCSSThemePath, 'utf-8')
+    const defaultCSSThemePath = resolveModule('tailwindcss/theme.css', packageResolvingOptions)
+    if (!defaultCSSThemePath)
+      throw new Error('Could not resolve tailwindcss theme')
+    const defaultCSSTheme = await fsp.readFile(defaultCSSThemePath, 'utf-8')
 
-      const css = typeof configPathOrContent === 'string' ? await fsp.readFile(configPathOrContent, 'utf-8') : ''
+    const css = typeof configPathOrContent === 'string' ? await fsp.readFile(configPathOrContent, 'utf-8') : ''
 
-      this.context = await __unstable__loadDesignSystem(
-        `${defaultCSSTheme}\n${css}`,
-        {
-          base: pwd,
-          async loadModule(id: any, base: any) {
-            return loadModule(id, base, () => {})
-          },
-          async loadStylesheet(id: any, base: any) {
-            return loadStylesheet(id, base, () => {})
-          },
+    this.context = await __unstable__loadDesignSystem(
+      `${defaultCSSTheme}\n${css}`,
+      {
+        base: pwd,
+        async loadModule(id: any, base: any) {
+          return loadModule(id, base, () => {})
         },
-      )
-
-      const extractorContext = {
-        tailwindConfig: {
-          separator: options?.separator ?? '-',
-          prefix: options?.prefix ?? '',
+        async loadStylesheet(id: any, base: any) {
+          return loadStylesheet(id, base, () => {})
         },
-      }
-      if (this.context) {
-        this.context.tailwindConfig = extractorContext.tailwindConfig
-      }
-      this.extractor = defaultExtractorLocal(extractorContext)
+      },
+    )
+
+    const extractorContext = {
+      tailwindConfig: {
+        separator: options?.separator ?? '-',
+        prefix: options?.prefix ?? '',
+      },
     }
-    else {
-      const { createContext } = require(
-        path.resolve(tailwindLibPath, '../lib/setupContextUtils.js'),
-      )
-      const resolveConfig = require(
-        path.resolve(tailwindLibPath, '../../resolveConfig.js'),
-      )
-      const { defaultExtractor } = require(
-        path.resolve(tailwindLibPath, '../lib/defaultExtractor.js'),
-      )
-      const loadConfig = require(
-        path.resolve(tailwindLibPath, '../../loadConfig.js'),
-      )
-
-      this.context = createContext(resolveConfig(
-        typeof configPathOrContent === 'string' ? loadConfig(configPathOrContent) : configPathOrContent,
-      ))
-
-      const extractorContext = {
-        tailwindConfig: {
-          separator: options?.separator ?? '-',
-          prefix: options?.prefix ?? '',
-        },
-      }
-      if (this.context?.tailwindConfig?.separator) {
-        extractorContext.tailwindConfig.separator = this.context.tailwindConfig.separator
-      }
-      if (this.context?.tailwindConfig?.prefix) {
-        extractorContext.tailwindConfig.prefix = this.context.tailwindConfig.prefix
-      }
-
-      this.extractor = defaultExtractor(extractorContext)
+    if (this.context) {
+      // TODO: migrate https://github.com/tailwindlabs/tailwindcss/blob/main/packages/tailwindcss/src/compat/config/resolve-config.ts
+      this.context.tailwindConfig = extractorContext.tailwindConfig
     }
+    this.extractor = defaultExtractorLocal(extractorContext)
+  }
+
+  loadConfigV3(
+    configPathOrContent: string | Record<PropertyKey, any>,
+    options?: {
+      pwd?: string
+      separator?: string
+      prefix?: string
+    },
+  ): void {
+    const pwd = options?.pwd ?? (typeof configPathOrContent === 'string' ? path.dirname(configPathOrContent) : undefined)
+    const packageResolvingOptions: PackageResolvingOptions = { paths: pwd ? [pwd] : undefined }
+
+    const tailwindLibPath = resolveModule('tailwindcss', packageResolvingOptions)
+    if (!tailwindLibPath)
+      throw new Error('Could not resolve tailwindcss')
+
+    const { createContext } = require(
+      path.resolve(tailwindLibPath, '../lib/setupContextUtils.js'),
+    )
+    const resolveConfig = require(
+      path.resolve(tailwindLibPath, '../../resolveConfig.js'),
+    )
+    const { defaultExtractor } = require(
+      path.resolve(tailwindLibPath, '../lib/defaultExtractor.js'),
+    )
+    const loadConfig = require(
+      path.resolve(tailwindLibPath, '../../loadConfig.js'),
+    )
+
+    this.context = createContext(resolveConfig(
+      typeof configPathOrContent === 'string' ? loadConfig(configPathOrContent) : configPathOrContent,
+    ))
+
+    const extractorContext = {
+      tailwindConfig: {
+        separator: options?.separator ?? '-',
+        prefix: options?.prefix ?? '',
+      },
+    }
+    if (this.context?.tailwindConfig?.separator) {
+      extractorContext.tailwindConfig.separator = this.context.tailwindConfig.separator
+    }
+    if (this.context?.tailwindConfig?.prefix) {
+      extractorContext.tailwindConfig.prefix = this.context.tailwindConfig.prefix
+    }
+
+    this.extractor = defaultExtractor(extractorContext)
   }
 
   isValidClassName(className: string): boolean
