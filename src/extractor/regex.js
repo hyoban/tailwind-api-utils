@@ -53,7 +53,9 @@ export function zeroOrMore(source) {
  *
  * Based on https://stackoverflow.com/questions/17759004/how-to-match-string-within-parentheses-nested-in-java/17759264#17759264
  *
- * @param {string|RegExp|Array<string|RegExp>} source
+ * @param {string} open
+ * @param {string} close
+ * @param {number} depth
  */
 export function nestedBrackets(open, close, depth = 1) {
   return withoutCapturing([

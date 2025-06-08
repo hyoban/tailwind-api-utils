@@ -43,7 +43,6 @@ export class TailwindUtils {
     configPathOrContent: string | Record<PropertyKey, any>,
     options?: {
       pwd?: string
-      separator?: string
       prefix?: string
     },
   ): Promise<void> {
@@ -79,7 +78,7 @@ export class TailwindUtils {
 
     const extractorContext = {
       tailwindConfig: {
-        separator: options?.separator ?? '-',
+        separator: ':',
         prefix: options?.prefix ?? '',
       },
     }
