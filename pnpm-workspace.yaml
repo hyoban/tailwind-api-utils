@@ -4,3 +4,7 @@ packages:
   - packages/*
   - examples/*
   - test/*
+onlyBuiltDependencies:
+  - esbuild
+  - simple-git-hooks
+  - unrs-resolver
